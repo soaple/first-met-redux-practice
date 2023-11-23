@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>처음 만난 리덕스 - TODO</title>
+        <script src="https://unpkg.com/redux@latest/dist/redux.min.js"></script>
+    </head>
+    <body>
+        <h3>오늘 할 일</h3>
+        <ul id="todo-list"></ul>
+
+        <div>
+            <input id="input-text" />
+            <button id="add-button">할 일 추가</button>
+            <button id="logging-state">State Logging</button>
+        </div>
+
+        <script>
+            function todoReducer(state, action) {
+                switch (action.type) {
+                    case 'ADD_TODO':
+                        return state.concat(action.text);
+                    default:
+                        return state;
+                }
+            }
+
+            function loggerMiddleware({ getState }) {
+                return (next) => (action) => {
+                    console.log('dispatch 예정 action', action);
+
+                    // Middleware chain에 있는 다음 dispatch 함수를 호출
+                    const returnValue = next(action);
+
+                    console.log('dispatch 이후 state', getState());
+
+                    return returnValue;
+                };
+            }
+
+            var store = Redux.createStore(
+                todoReducer,
+                ['처음 만난 리덕스 공부하기'],
+                Redux.applyMiddleware(loggerMiddleware)
+            );
+
+            var todoListElem = document.getElementById('todo-list');
+            var inputElem = document.getElementById('input-text');
+
+            function render() {
+                // 이전 TODO 목록 초기화
+                todoListElem.innerHTML = '';
+
+                // TODO 목록 렌더링
+                store.getState().forEach((todo) => {
+                    const todoListItemElem = document.createElement('li');
+                    todoListItemElem.textContent = todo;
+                    todoListElem.appendChild(todoListItemElem);
+                });
+            }
+
+            render();
+            store.subscribe(render);
+
+            document
+                .getElementById('add-button')
+                .addEventListener('click', function () {
+                    // Action을 실제로 dispatch
+                    store.dispatch({
+                        type: 'ADD_TODO',
+                        text: inputElem.value,
+                    });
+
+                    // Input 초기화
+                    inputElem.value = '';
+                });
+
+            document
+                .getElementById('logging-state')
+                .addEventListener('click', function () {
+                    console.log('현재 state', store.getState());
+                });
+        </script>
+    </body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>처음 만난 리덕스 - TODO</title>
+        <script src="https://unpkg.com/redux@latest/dist/redux.min.js"></script>
+    </head>
+    <body>
+        <h3>오늘 할 일</h3>
+        <ul id="todo-list"></ul>
+
+        <div>
+            <input id="input-text" />
+            <button id="add-button">할 일 추가</button>
+            <button id="remove-button">할 일 삭제</button>
+            <button id="remove-all-button">모두 삭제</button>
+            <button id="logging-state">State Logging</button>
+        </div>
+
+        <script>
+            var ACTION_TYPE_ADD_TODO = 'ADD_TODO';
+            var ACTION_TYPE_REMOVE_TODO = 'REMOVE_TODO';
+            var ACTION_TYPE_REMOVE_ALL = 'REMOVE_ALL';
+
+            function todoReducer(state = todoInitialState, action) {
+                switch (action.type) {
+                    case ACTION_TYPE_ADD_TODO:
+                        return state.concat(action.text);
+                    case ACTION_TYPE_REMOVE_TODO:
+                        return state.slice(0, -1);
+                    case ACTION_TYPE_REMOVE_ALL:
+                        return [];
+                    default:
+                        return state;
+                }
+            }
+
+            function loggerMiddleware({ getState }) {
+                return (next) => (action) => {
+                    console.log('dispatch 예정 action', action);
+
+                    // Middleware chain에 있는 다음 dispatch 함수를 호출
+                    const returnValue = next(action);
+
+                    console.log('dispatch 이후 state', getState());
+
+                    return returnValue;
+                };
+            }
+
+            var store = Redux.createStore(
+                todoReducer,
+                ['처음 만난 리덕스 공부하기'],
+                Redux.applyMiddleware(loggerMiddleware)
+            );
+
+            var todoListElem = document.getElementById('todo-list');
+            var inputElem = document.getElementById('input-text');
+
+            function render() {
+                // 이전 TODO, MEMO 목록 초기화
+                todoListElem.innerHTML = '';
+
+                // TODO 목록 렌더링
+                store.getState().forEach((todo) => {
+                    const todoListItemElem = document.createElement('li');
+                    todoListItemElem.textContent = todo;
+                    todoListElem.appendChild(todoListItemElem);
+                });
+            }
+
+            render();
+            store.subscribe(render);
+
+            function addTodoActionCreator(text) {
+                return {
+                    type: ACTION_TYPE_ADD_TODO,
+                    text: text,
+                };
+            }
+
+            function removeTodoActionCreator() {
+                return {
+                    type: ACTION_TYPE_REMOVE_TODO,
+                };
+            }
+
+            function removeAllActionCreator() {
+                return {
+                    type: ACTION_TYPE_REMOVE_ALL,
+                };
+            }
+
+            document
+                .getElementById('add-button')
+                .addEventListener('click', function () {
+                    // Action을 실제로 dispatch
+                    store.dispatch(addTodoActionCreator(inputElem.value));
+
+                    // Input 초기화
+                    inputElem.value = '';
+                });
+
+            document
+                .getElementById('remove-button')
+                .addEventListener('click', function () {
+                    store.dispatch(removeTodoActionCreator());
+                });
+
+            document
+                .getElementById('remove-all-button')
+                .addEventListener('click', function () {
+                    store.dispatch(removeAllActionCreator());
+                });
+
+            document
+                .getElementById('logging-state')
+                .addEventListener('click', function () {
+                    console.log('현재 state', store.getState());
+                });
+        </script>
+    </body>
+</html>
