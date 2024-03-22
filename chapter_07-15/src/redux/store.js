@@ -2,6 +2,8 @@
 import { configureStore } from "@reduxjs/toolkit";
 import rootReducer from "./reducers";
 import thunkMiddleware from "redux-thunk";
+// NOTE(inje): redux-thunk 3점대 버전을 사용하는 분들은 아래와 같이 import 해주세요.
+// import { thunk as thunkMiddleware } from 'redux-thunk';
 import createSagaMiddleware from 'redux-saga';
 import rootSaga from "./sagas";
 // import asyncFunctionMiddleware from "./middlewares/asyncFunctionMiddleware";
